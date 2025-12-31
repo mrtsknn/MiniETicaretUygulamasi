@@ -1,9 +1,8 @@
 ﻿using ETicaretAPI.Persistance.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace ETicaretAPI.Persistance
 {
@@ -11,9 +10,25 @@ namespace ETicaretAPI.Persistance
     {
         public ETicaretAPIDbContext CreateDbContext(string[] args)
         {
-            DbContextOptionsBuilder<ETicaretAPIDbContext> dbContextOptionsBuilder = new();
-            dbContextOptionsBuilder.UseNpgsql("User ID=postgres;Password=123456;Host=localhost;Port=5432;Database=ETicaretAPIDb;");
-            return new ETicaretAPIDbContext(dbContextOptionsBuilder.Options);
+            var basePath = Path.Combine(
+    Directory.GetParent(Directory.GetCurrentDirectory())!.Parent!.FullName,
+    "Presentation",
+    "ETicaretAPI.API"
+);
+
+
+
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+    .SetBasePath(basePath)
+    .AddJsonFile("appsettings.json")
+    .Build();
+
+
+            var builder = new DbContextOptionsBuilder<ETicaretAPIDbContext>();
+
+            builder.UseNpgsql(configuration.GetConnectionString("PostgreSQL"));
+
+            return new ETicaretAPIDbContext(builder.Options);
         }
     }
 }
